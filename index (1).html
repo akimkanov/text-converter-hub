@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Text Converter Hub</title>
+<style>
+  /* ============ RESET & BASE ============ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root{
+    --bg-1: #0a0a17;
+    --bg-2: #120b29;
+    --accent-1: #7c5cff;
+    --accent-2: #3ad6ff;
+    --accent-3: #ff4dd8;
+    --glass-bg: rgba(255,255,255,0.05);
+    --glass-border: rgba(255,255,255,0.12);
+    --text-main: #f1f0ff;
+    --text-dim: #9d9ac0;
+    --radius: 18px;
+    --shadow-glow: 0 0 40px rgba(124,92,255,0.25);
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-main);
+    background:
+      radial-gradient(circle at 15% 15%, rgba(124,92,255,0.25), transparent 45%),
+      radial-gradient(circle at 85% 20%, rgba(58,214,255,0.18), transparent 40%),
+      radial-gradient(circle at 50% 90%, rgba(255,77,216,0.15), transparent 45%),
+      linear-gradient(160deg, var(--bg-1), var(--bg-2) 70%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Ambient floating orbs for depth */
+  body::before, body::after{
+    content: "";
+    position: fixed;
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+  body::before{
+    background: var(--accent-1);
+    top: -150px;
+    left: -150px;
+    animation: floatOrb 14s ease-in-out infinite;
+  }
+  body::after{
+    background: var(--accent-2);
+    bottom: -150px;
+    right: -150px;
+    animation: floatOrb 18s ease-in-out infinite reverse;
+  }
+  @keyframes floatOrb{
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(40px, 30px) scale(1.1); }
+  }
+
+  .wrapper{
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 48px 24px 100px;
+  }
+
+  /* ============ SCROLLBAR ============ */
+  ::-webkit-scrollbar{ width: 10px; }
+  ::-webkit-scrollbar-track{ background: transparent; }
+  ::-webkit-scrollbar-thumb{
+    background: linear-gradient(var(--accent-1), var(--accent-2));
+    border-radius: 10px;
+  }
+
+  /* ============ HEADER ============ */
+  header{
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeInDown 0.8s ease both;
+  }
+
+  .logo-badge{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 78px;
+    height: 78px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+    box-shadow: 0 0 45px rgba(124,92,255,0.55), inset 0 0 20px rgba(255,255,255,0.2);
+    font-size: 34px;
+    margin-bottom: 20px;
+    animation: pulseGlow 3.5s ease-in-out infinite;
+  }
+
+  @keyframes pulseGlow{
+    0%, 100% { box-shadow: 0 0 35px rgba(124,92,255,0.45), inset 0 0 20px rgba(255,255,255,0.15); }
+    50% { box-shadow: 0 0 60px rgba(58,214,255,0.55), inset 0 0 25px rgba(255,255,255,0.25); }
+  }
+
+  h1{
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(100deg, #ffffff 10%, var(--accent-2) 45%, var(--accent-3) 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 12px;
+  }
+
+  header p{
+    color: var(--text-dim);
+    font-size: clamp(0.95rem, 2vw, 1.15rem);
+    font-weight: 400;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* ============ GLASS PANEL BASE ============ */
+  .glass{
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  }
+
+  /* ============ INPUT SECTION ============ */
+  .input-section{
+    padding: 28px;
+    margin-bottom: 36px;
+    animation: fadeInUp 0.8s ease 0.1s both;
+  }
+
+  .section-label{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent-2);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .section-label .dot{
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent-2);
+    box-shadow: 0 0 10px var(--accent-2);
+  }
+
+  textarea{
+    width: 100%;
+    min-height: 140px;
+    resize: vertical;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 18px;
+    color: var(--text-main);
+    font-size: 1.05rem;
+    font-family: inherit;
+    line-height: 1.5;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  }
+
+  textarea::placeholder{ color: var(--text-dim); }
+
+  textarea:focus{
+    border-color: var(--accent-1);
+    background: rgba(255,255,255,0.06);
+    box-shadow: 0 0 0 4px rgba(124,92,255,0.18), 0 0 30px rgba(124,92,255,0.15);
+  }
+
+  .input-actions{
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  /* ============ BUTTONS ============ */
+  button{
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    outline: none;
+  }
+
+  .btn{
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+  }
+
+  .btn:active{ transform: scale(0.96); }
+
+  .btn-ghost{
+    background: rgba(255,255,255,0.06);
+    color: var(--text-main);
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+  .btn-ghost:hover{
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.25);
+  }
+
+  .btn-primary{
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(124,92,255,0.4);
+  }
+  .btn-primary:hover{
+    filter: brightness(1.12);
+    box-shadow: 0 8px 32px rgba(124,92,255,0.6);
+    transform: translateY(-2px);
+  }
+
+  /* Ripple effect */
+  .btn .ripple{
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    transform: scale(0);
+    animation: rippleAnim 0.6s ease-out;
+    pointer-events: none;
+  }
+  @keyframes rippleAnim{
+    to{ transform: scale(3); opacity: 0; }
+  }
+
+  /* ============ GRID SECTION ============ */
+  .grid-section{
+    margin-bottom: 36px;
+    animation: fadeInUp 0.8s ease 0.2s both;
+  }
+
+  .search-box{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+  }
+  .search-box:focus-within{
+    border-color: var(--accent-2);
+    box-shadow: 0 0 20px rgba(58,214,255,0.15);
+  }
+  .search-box input{
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    font-family: inherit;
+  }
+  .search-box input::placeholder{ color: var(--text-dim); }
+  .search-box svg{ flex-shrink: 0; opacity: 0.6; }
+
+  .cards-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+  }
+
+  .card{
+    position: relative;
+    overflow: hidden;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 18px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    animation: fadeInUp 0.5s ease both;
+    user-select: none;
+  }
+
+  .card::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(124,92,255,0.25), rgba(58,214,255,0.15));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .card:hover{
+    transform: translateY(-4px) scale(1.02);
+    border-color: rgba(124,92,255,0.5);
+    box-shadow: 0 10px 30px rgba(124,92,255,0.25);
+  }
+  .card:hover::before{ opacity: 1; }
+
+  .card.active{
+    border-color: var(--accent-2);
+    background: linear-gradient(135deg, rgba(124,92,255,0.28), rgba(58,214,255,0.18));
+    box-shadow: 0 0 0 2px rgba(58,214,255,0.4), 0 10px 34px rgba(58,214,255,0.3);
+  }
+
+  .card span{
+    position: relative;
+    z-index: 1;
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+
+  /* ============ RESULT SECTION ============ */
+  .result-section{
+    padding: 28px;
+    animation: fadeInUp 0.8s ease 0.3s both;
+  }
+
+  .result-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .result-title{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .result-title .badge{
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+    color: #fff;
+  }
+
+  .result-box{
+    width: 100%;
+    min-height: 140px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 20px;
+    font-size: 1.15rem;
+    line-height: 1.7;
+    word-break: break-word;
+    white-space: pre-wrap;
+    transition: box-shadow 0.3s ease;
+  }
+
+  .result-box.empty{
+    color: var(--text-dim);
+    font-size: 0.98rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .result-box.glow-update{
+    animation: resultGlow 0.6s ease;
+  }
+  @keyframes resultGlow{
+    0%{ box-shadow: 0 0 0 rgba(58,214,255,0); }
+    40%{ box-shadow: 0 0 35px rgba(58,214,255,0.35); }
+    100%{ box-shadow: 0 0 0 rgba(58,214,255,0); }
+  }
+
+  .copy-row{
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+  }
+
+  .btn-copy{
+    min-width: 160px;
+    justify-content: center;
+  }
+
+  .btn-copy.copied{
+    background: linear-gradient(135deg, #2fe6a0, #3ad6ff);
+    box-shadow: 0 6px 24px rgba(47,230,160,0.4);
+  }
+
+  /* ============ ANIMATIONS ============ */
+  @keyframes fadeInDown{
+    from{ opacity: 0; transform: translateY(-20px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInUp{
+    from{ opacity: 0; transform: translateY(20px); }
+    to{ opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn{
+    from{ opacity: 0; }
+    to{ opacity: 1; }
+  }
+
+  footer{
+    text-align: center;
+    margin-top: 60px;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px){
+    .wrapper{ padding: 32px 16px 80px; }
+    .cards-grid{ grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+    .card{ padding: 14px 10px; }
+    .card span{ font-size: 0.82rem; }
+    .input-actions{ justify-content: stretch; }
+    .input-actions .btn{ flex: 1; justify-content: center; }
+    .result-header{ flex-direction: column; align-items: flex-start; }
+    .copy-row{ justify-content: stretch; }
+    .btn-copy{ width: 100%; }
+  }
+
+  @media (max-width: 420px){
+    .cards-grid{ grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    .logo-badge{ width: 64px; height: 64px; font-size: 28px; border-radius: 18px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- ============ HEADER ============ -->
+  <header>
+    <div class="logo-badge">🔮</div>
+    <h1>Text Converter Hub</h1>
+    <p>Convert text into beautiful styles, symbols and ciphers</p>
+  </header>
+
+  <!-- ============ INPUT SECTION ============ -->
+  <section class="input-section glass">
+    <div class="section-label"><span class="dot"></span>Your Text</div>
+    <textarea id="inputText" placeholder="Type or paste your text..." autofocus></textarea>
+    <div class="input-actions">
+      <button class="btn btn-ghost" id="clearBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        Clear
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ GRID SECTION ============ -->
+  <section class="grid-section">
+    <div class="section-label"><span class="dot"></span>Choose a Conversion</div>
+    <div class="search-box">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchBox" placeholder="Search conversions...">
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+  </section>
+
+  <!-- ============ RESULT SECTION ============ -->
+  <section class="result-section glass">
+    <div class="result-header">
+      <div class="result-title">
+        Result
+        <span class="badge" id="activeBadge">None Selected</span>
+      </div>
+    </div>
+    <div class="result-box empty" id="resultBox">Select a conversion above to see the magic happen ✨</div>
+    <div class="copy-row">
+      <button class="btn btn-primary btn-copy" id="copyBtn" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" id="copyIcon"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        <span id="copyLabel">Copy</span>
+      </button>
+    </div>
+  </section>
+
+  <footer>Made with glassmorphism, gradients &amp; pure vanilla JS — 100% offline.</footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     HELPER: build a lookup map from a "normal" string and a
+     "target" string of equal length (character by character).
+  ========================================================= */
+  function buildMap(fromStr, toArr){
+    const map = {};
+    const fromArr = Array.from(fromStr);
+    for (let i = 0; i < fromArr.length; i++){
+      map[fromArr[i]] = toArr[i];
+    }
+    return map;
+  }
+
+  function mapText(text, map, fallbackFn){
+    return Array.from(text).map(ch => {
+      if (Object.prototype.hasOwnProperty.call(map, ch)) return map[ch];
+      return fallbackFn ? fallbackFn(ch) : ch;
+    }).join('');
+  }
+
+  const UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const LOWER = "abcdefghijklmnopqrstuvwxyz";
+  const DIGITS = "0123456789";
+
+  /* =========================================================
+     UNICODE FANCY ALPHABETS (character tables)
+  ========================================================= */
+  const TABLES = {
+    bold: {
+      up: Array.from("𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙"),
+      low: Array.from("𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳"),
+      dig: Array.from("𝟎𝟏𝟐𝟑𝟒𝟓𝟔𝟕𝟖𝟗")
+    },
+    italic: {
+      up: Array.from("𝐴𝐵𝐶𝐷𝐸𝐹𝐺𝐻𝐼𝐽𝐾𝐿𝑀𝑁𝑂𝑃𝑄𝑅𝑆𝑇𝑈𝑉𝑊𝑋𝑌𝑍"),
+      low: Array.from("𝑎𝑏𝑐𝑑𝑒𝑓𝑔ℎ𝑖𝑗𝑘𝑙𝑚𝑛𝑜𝑝𝑞𝑟𝑠𝑡𝑢𝑣𝑤𝑥𝑦𝑧"),
+      dig: Array.from(DIGITS)
+    },
+    script: {
+      up: Array.from("𝒜ℬ𝒞𝒟ℰℱ𝒢ℋℐ𝒥𝒦ℒℳ𝒩𝒪𝒫𝒬ℛ𝒮𝒯𝒰𝒱𝒲𝒳𝒴𝒵"),
+      low: Array.from("𝒶𝒷𝒸𝒹ℯ𝒻ℊ𝒽𝒾𝒿𝓀𝓁𝓂𝓃ℴ𝓅𝓆𝓇𝓈𝓉𝓊𝓋𝓌𝓍𝓎𝓏"),
+      dig: Array.from(DIGITS)
+    },
+    doublestruck: {
+      up: Array.from("𝔸𝔹ℂ𝔻𝔼𝔽𝔾ℍ𝕀𝕁𝕂𝕃𝕄ℕ𝕆ℙℚℝ𝕊𝕋𝕌𝕍𝕎𝕏𝕐ℤ"),
+      low: Array.from("𝕒𝕓𝕔𝕕𝕖𝕗𝕘𝕙𝕚𝕛𝕜𝕝𝕞𝕟𝕠𝕡𝕢𝕣𝕤𝕥𝕦𝕧𝕨𝕩𝕪𝕫"),
+      dig: Array.from("𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡")
+    },
+    fraktur: {
+      up: Array.from("𝔄𝔅ℭ𝔇𝔈𝔉𝔊ℌℑ𝔍𝔎𝔏𝔐𝔑𝔒𝔓𝔔ℜ𝔖𝔗𝔘𝔙𝔚𝔛𝔜ℨ"),
+      low: Array.from("𝔞𝔟𝔠𝔡𝔢𝔣𝔤𝔥𝔦𝔧𝔨𝔩𝔪𝔫𝔬𝔭𝔮𝔯𝔰𝔱𝔲𝔳𝔴𝔵𝔶𝔷"),
+      dig: Array.from(DIGITS)
+    },
+    bubble: {
+      up: Array.from("ⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓂⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏ"),
+      low: Array.from("ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ"),
+      dig: Array.from("⓪①②③④⑤⑥⑦⑧⑨")
+    },
+    circled: {
+      up: Array.from("🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩"),
+      low: Array.from("🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩").map(c => c), // reuse uppercase-style glyphs for lowercase input
+      dig: Array.from("⓿➊➋➌➍➎➏➐➑➒")
+    },
+    squared: {
+      up: Array.from("🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉"),
+      low: Array.from("🄰🄱🄲🄳🄴🄵🄶🄷🄸🄹🄺🄻🄼🄽🄾🄿🅀🅁🅂🅃🅄🅅🅆🅇🅈🅉"),
+      dig: Array.from(DIGITS)
+    },
+    smallcaps: {
+      up: Array.from(UPPER), // uppercase stays as-is
+      low: Array.from("ᴀʙᴄᴅᴇꜰɢʜɪᴊᴋʟᴍɴᴏᴘǫʀꜱᴛᴜᴠᴡxʏᴢ"),
+      dig: Array.from(DIGITS)
+    },
+    monospace: {
+      up: Array.from("𝙰𝙱𝙲𝙳𝙴𝙵𝙶𝙷𝙸𝙹𝙺𝙻𝙼𝙽𝙾𝙿𝚀𝚁𝚂𝚃𝚄𝚅𝚆𝚇𝚈𝚉"),
+      low: Array.from("𝚊𝚋𝚌𝚍𝚎𝚏𝚐𝚑𝚒𝚓𝚔𝚕𝚖𝚗𝚘𝚙𝚚𝚛𝚜𝚝𝚞𝚟𝚠𝚡𝚢𝚣"),
+      dig: Array.from("𝟶𝟷𝟸𝟹𝟺𝟻𝟼𝟽𝟾𝟿")
+    },
+    superscript: {
+      up: Array.from("ᴬᴮᶜᴰᴱᶠᴳᴴᴵᴶᴷᴸᴹᴺᴼᴾQᴿˢᵀᵁⱽᵂˣʸᶻ"),
+      low: Array.from("ᵃᵇᶜᵈᵉᶠᵍʰⁱʲᵏˡᵐⁿᵒᵖqʳˢᵗᵘᵛʷˣʸᶻ"),
+      dig: Array.from("⁰¹²³⁴⁵⁶⁷⁸⁹")
+    },
+    subscript: {
+      // Not every letter has an official subscript glyph; unsupported ones fall back to the original character.
+      up: Array.from(UPPER),
+      low: "ₐbcdₑfgₕᵢⱼₖₗₘₙₒₚqᵣₛₜᵤᵥwₓyz".split(""),
+      dig: Array.from("₀₁₂₃₄₅₆₇₈₉")
+    }
+  };
+
+  function buildAlphabetMap(table){
+    const map = {};
+    for (let i = 0; i < UPPER.length; i++) map[UPPER[i]] = table.up[i];
+    for (let i = 0; i < LOWER.length; i++) map[LOWER[i]] = table.low[i];
+    for (let i = 0; i < DIGITS.length; i++) map[DIGITS[i]] = table.dig[i];
+    return map;
+  }
+
+  function convertWithTable(text, tableKey){
+    const map = buildAlphabetMap(TABLES[tableKey]);
+    return mapText(text, map);
+  }
+
+  /* =========================================================
+     LEETSPEAK
+  ========================================================= */
+  const LEET_MAP = { a:'4', A:'4', e:'3', E:'3', i:'1', I:'1', o:'0', O:'0', s:'5', S:'5', t:'7', T:'7', l:'1', L:'1', b:'8', B:'8', g:'9', G:'9' };
+  function toLeet(text){
+    return Array.from(text).map(ch => LEET_MAP[ch] !== undefined ? LEET_MAP[ch] : ch).join('');
+  }
+
+  /* =========================================================
+     REVERSE / MIRROR / UPSIDE DOWN
+  ========================================================= */
+  function toReverse(text){
+    return Array.from(text).reverse().join('');
+  }
+
+  const MIRROR_BRACKETS = { '(':')', ')':'(', '[':']', ']':'[', '{':'}', '}':'{', '<':'>', '>':'<', '/':'\\\\', '\\\\':'/' };
+  const MIRROR_LETTERS = { b:'d', d:'b', p:'q', q:'p', B:'D', D:'B' };
+  function toMirror(text){
+    const reversed = Array.from(text).reverse();
+    return reversed.map(ch => MIRROR_BRACKETS[ch] || MIRROR_LETTERS[ch] || ch).join('');
+  }
+
+  const UPSIDE_MAP = {
+    a:'ɐ', b:'q', c:'ɔ', d:'p', e:'ǝ', f:'ɟ', g:'ƃ', h:'ɥ', i:'ᴉ', j:'ɾ', k:'ʞ', l:'l',
+    m:'ɯ', n:'u', o:'o', p:'d', q:'b', r:'ɹ', s:'s', t:'ʇ', u:'n', v:'ʌ', w:'ʍ', x:'x', y:'ʎ', z:'z',
+    A:'∀', B:'𐐒', C:'Ɔ', D:'ᗡ', E:'Ǝ', F:'Ⅎ', G:'⅁', H:'H', I:'I', J:'ſ', K:'ʞ', L:'˥',
+    M:'W', N:'N', O:'O', P:'Ԁ', Q:'Ό', R:'ᴚ', S:'S', T:'⊥', U:'∩', V:'Λ', W:'M', X:'X', Y:'⅄', Z:'Z',
+    '0':'0','1':'Ɩ','2':'ᄅ','3':'Ɛ','4':'ㄣ','5':'ϛ','6':'9','7':'ㄥ','8':'8','9':'6',
+    '.':'˙', ',':"'", "'":',', '"':',,', '?':'¿', '!':'¡'
+  };
+  function toUpsideDown(text){
+    const mapped = Array.from(text).map(ch => UPSIDE_MAP[ch] !== undefined ? UPSIDE_MAP[ch] : ch);
+    return mapped.reverse().join('');
+  }
+
+  /* =========================================================
+     ZALGO
+  ========================================================= */
+  const ZALGO_UP = ["\u030d","\u030e","\u0304","\u0305","\u033f","\u0311","\u0306","\u0310","\u0352","\u0357","\u0351","\u0307","\u0308","\u030a","\u0342","\u0343","\u0344","\u034a","\u034b","\u034c","\u0303","\u0302","\u030c","\u0350","\u0300","\u0301","\u030b","\u030f","\u0312","\u0313","\u0314","\u033d","\u0309","\u0363","\u0364","\u0365","\u0366","\u0367","\u0368","\u0369","\u036a","\u036b","\u036c","\u036d","\u036e","\u036f","\u033e","\u035b","\u0346","\u031a"];
+  const ZALGO_DOWN = ["\u0316","\u0317","\u0318","\u0319","\u031c","\u031d","\u031e","\u031f","\u0320","\u0324","\u0325","\u0326","\u0329","\u032a","\u032b","\u032c","\u032d","\u032e","\u032f","\u0330","\u0331","\u0332","\u0333","\u0339","\u033a","\u033b","\u033c","\u0345","\u0347","\u0348","\u0349","\u034d","\u034e","\u0353","\u0354","\u0355","\u0356","\u0359","\u035a","\u0323"];
+  const ZALGO_MID = ["\u0315","\u031b","\u0340","\u0341","\u0358","\u0321","\u0322","\u0327","\u0328","\u0334","\u0335","\u0336","\u034f","\u035c","\u035d","\u035e","\u035f","\u0360","\u0362","\u0338","\u0337","\u0361","\u0489"];
+
+  function randPick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function toZalgo(text){
+    return Array.from(text).map(ch => {
+      if (ch === ' ' || ch === '\\n') return ch;
+      let out = ch;
+      const upCount = 1 + Math.floor(Math.random() * 3);
+      const downCount = 1 + Math.floor(Math.random() * 3);
+      const midCount = Math.floor(Math.random() * 2);
+      for (let i = 0; i < upCount; i++) out += randPick(ZALGO_UP);
+      for (let i = 0; i < downCount; i++) out += randPick(ZALGO_DOWN);
+      for (let i = 0; i < midCount; i++) out += randPick(ZALGO_MID);
+      return out;
+    }).join('');
+  }
+
+  /* =========================================================
+     MORSE CODE
+  ========================================================= */
+  const MORSE_MAP = {
+    A:'.-', B:'-...', C:'-.-.', D:'-..', E:'.', F:'..-.', G:'--.', H:'....', I:'..',
+    J:'.---', K:'-.-', L:'.-..', M:'--', N:'-.', O:'---', P:'.--.', Q:'--.-', R:'.-.',
+    S:'...', T:'-', U:'..-', V:'...-', W:'.--', X:'-..-', Y:'-.--', Z:'--..',
+    '0':'-----','1':'.----','2':'..---','3':'...--','4':'....-','5':'.....',
+    '6':'-....','7':'--...','8':'---..','9':'----.',
+    '.':'.-.-.-', ',':'--..--', '?':'..--..', "'":'.----.', '!':'-.-.--', '/':'-..-.',
+    '(':'-.--.', ')':'-.--.-', '&':'.-...', ':':'---...', ';':'-.-.-.', '=':'-...-',
+    '+':'.-.-.', '-':'-....-', '_':'..--.-', '"':'.-..-.', '$':'...-..-', '@':'.--.-.'
+  };
+  function toMorse(text){
+    return text.toUpperCase().split(' ').map(word => {
+      return Array.from(word).map(ch => MORSE_MAP[ch] !== undefined ? MORSE_MAP[ch] : ch).join(' ');
+    }).join(' / ');
+  }
+
+  /* =========================================================
+     BINARY / HEX / ASCII / UNICODE / HTML ENTITIES
+  ========================================================= */
+  function toBinary(text){
+    return Array.from(text).map(ch => ch.codePointAt(0).toString(2).padStart(8, '0')).join(' ');
+  }
+  function toHex(text){
+    return Array.from(text).map(ch => ch.codePointAt(0).toString(16).padStart(2, '0')).join(' ');
+  }
+  function toAsciiCodes(text){
+    return Array.from(text).map(ch => ch.codePointAt(0)).join(' ');
+  }
+  function toUnicodeCodes(text){
+    return Array.from(text).map(ch => 'U+' + ch.codePointAt(0).toString(16).toUpperCase().padStart(4, '0')).join(' ');
+  }
+  function toHtmlEntities(text){
+    return Array.from(text).map(ch => '&#' + ch.codePointAt(0) + ';').join('');
+  }
+
+  /* =========================================================
+     BASE64 (Unicode-safe)
+  ========================================================= */
+  function toBase64(text){
+    try {
+      const bytes = new TextEncoder().encode(text);
+      let binary = '';
+      bytes.forEach(b => binary += String.fromCharCode(b));
+      return btoa(binary);
+    } catch (e){
+      return 'Encoding error';
+    }
+  }
+
+  /* =========================================================
+     URL ENCODE / DECODE
+  ========================================================= */
+  function toUrlEncode(text){
+    return encodeURIComponent(text);
+  }
+  function toUrlDecode(text){
+    try { return decodeURIComponent(text); }
+    catch (e){ return 'Invalid encoded string'; }
+  }
+
+  /* =========================================================
+     ROT13 / CAESAR / ATBASH
+  ========================================================= */
+  function shiftChar(ch, shift){
+    if (ch >= 'a' && ch <= 'z') return String.fromCharCode((ch.charCodeAt(0) - 97 + shift + 26) % 26 + 97);
+    if (ch >= 'A' && ch <= 'Z') return String.fromCharCode((ch.charCodeAt(0) - 65 + shift + 26) % 26 + 65);
+    return ch;
+  }
+  function toRot13(text){
+    return Array.from(text).map(ch => shiftChar(ch, 13)).join('');
+  }
+  function toCaesar(text){
+    return Array.from(text).map(ch => shiftChar(ch, 3)).join('');
+  }
+  function toAtbash(text){
+    return Array.from(text).map(ch => {
+      if (ch >= 'a' && ch <= 'z') return String.fromCharCode(97 + (25 - (ch.charCodeAt(0) - 97)));
+      if (ch >= 'A' && ch <= 'Z') return String.fromCharCode(65 + (25 - (ch.charCodeAt(0) - 65)));
+      return ch;
+    }).join('');
+  }
+
+  /* =========================================================
+     BRAILLE (basic Latin alphabet + digits)
+  ========================================================= */
+  const BRAILLE_MAP = {
+    a:'⠁', b:'⠃', c:'⠉', d:'⠙', e:'⠑', f:'⠋', g:'⠛', h:'⠓', i:'⠊', j:'⠚',
+    k:'⠅', l:'⠇', m:'⠍', n:'⠝', o:'⠕', p:'⠏', q:'⠟', r:'⠗', s:'⠎', t:'⠞',
+    u:'⠥', v:'⠧', w:'⠺', x:'⠭', y:'⠽', z:'⠵',
+    '1':'⠼⠁','2':'⠼⠃','3':'⠼⠉','4':'⠼⠙','5':'⠼⠑','6':'⠼⠋','7':'⠼⠛','8':'⠼⠓','9':'⠼⠊','0':'⠼⠚',
+    ' ':' ', '.':'⠲', ',':'⠂', '!':'⠖', '?':'⠦'
+  };
+  function toBraille(text){
+    return Array.from(text.toLowerCase()).map(ch => BRAILLE_MAP[ch] !== undefined ? BRAILLE_MAP[ch] : ch).join('');
+  }
+
+  /* =========================================================
+     RUNES (Elder Futhark approximation)
+  ========================================================= */
+  const RUNES_MAP = {
+    a:'ᚨ', b:'ᛒ', c:'ᚲ', d:'ᛞ', e:'ᛖ', f:'ᚠ', g:'ᚷ', h:'ᚺ', i:'ᛁ', j:'ᛃ',
+    k:'ᚲ', l:'ᛚ', m:'ᛗ', n:'ᚾ', o:'ᛟ', p:'ᛈ', q:'ᚲ', r:'ᚱ', s:'ᛊ', t:'ᛏ',
+    u:'ᚢ', v:'ᚹ', w:'ᚹ', x:'ᛉ', y:'ᚤ', z:'ᛉ'
+  };
+  function toRunes(text){
+    return Array.from(text.toLowerCase()).map(ch => RUNES_MAP[ch] !== undefined ? RUNES_MAP[ch] : ch).join('');
+  }
+
+  /* =========================================================
+     OLD TURKIC / ORKHON RUNES (simplified approximation)
+  ========================================================= */
+  const ORKHON_MAP = {
+    a:'\u{10C02}', b:'\u{10C0C}', c:'\u{10C24}', d:'\u{10C0F}', e:'\u{10C03}',
+    f:'\u{10C29}', g:'\u{10C11}', h:'\u{10C21}', i:'\u{10C05}', j:'\u{10C28}',
+    k:'\u{10C13}', l:'\u{10C1B}', m:'\u{10C1F}', n:'\u{10C17}', o:'\u{10C08}',
+    p:'\u{10C29}', q:'\u{10C0A}', r:'\u{10C1D}', s:'\u{10C22}', t:'\u{10C15}',
+    u:'\u{10C08}', v:'\u{10C29}', w:'\u{10C29}', x:'\u{10C22}', y:'\u{10C06}', z:'\u{10C26}'
+  };
+  function toOrkhon(text){
+    return Array.from(text.toLowerCase()).map(ch => ORKHON_MAP[ch] !== undefined ? ORKHON_MAP[ch] : ch).join('');
+  }
+
+  /* =========================================================
+     EMOJI TEXT (regional indicator style letters + keycap digits)
+  ========================================================= */
+  function toEmojiText(text){
+    return Array.from(text).map(ch => {
+      const lower = ch.toLowerCase();
+      if (lower >= 'a' && lower <= 'z'){
+        const codePoint = 0x1F1E6 + (lower.charCodeAt(0) - 97);
+        return String.fromCodePoint(codePoint);
+      }
+      if (ch >= '0' && ch <= '9'){
+        return ch + '\u20E3'; // combining keycap
+      }
+      if (ch === ' ') return '  ';
+      return ch;
+    }).join(' ');
+  }
+
+  /* =========================================================
+     ATBASH ALREADY DEFINED ABOVE. RAIL FENCE CIPHER:
+  ========================================================= */
+  function toRailFence(text, rails){
+    rails = rails || 3;
+    if (rails < 2) return text;
+    const fence = Array.from({length: rails}, () => []);
+    let rail = 0, dir = 1;
+    for (const ch of text){
+      fence[rail].push(ch);
+      if (rail === 0) dir = 1;
+      else if (rail === rails - 1) dir = -1;
+      rail += dir;
+    }
+    return fence.map(row => row.join('')).join('');
+  }
+
+  /* =========================================================
+     BACON CIPHER
+  ========================================================= */
+  const BACON_MAP = {
+    a:'AAAAA', b:'AAAAB', c:'AAABA', d:'AAABB', e:'AABAA', f:'AABAB', g:'AABBA', h:'AABBB',
+    i:'ABAAA', j:'ABAAB', k:'ABABA', l:'ABABB', m:'ABBAA', n:'ABBAB', o:'ABBBA', p:'ABBBB',
+    q:'BAAAA', r:'BAAAB', s:'BAABA', t:'BAABB', u:'BABAA', v:'BABAB', w:'BABBA', x:'BABBB',
+    y:'BBAAA', z:'BBAAB'
+  };
+  function toBacon(text){
+    return Array.from(text.toLowerCase()).map(ch => {
+      if (BACON_MAP[ch]) return BACON_MAP[ch];
+      if (ch === ' ') return '/';
+      return ch;
+    }).join(' ');
+  }
+
+  /* =========================================================
+     PIGPEN CIPHER (symbolic representation using geometric glyphs)
+  ========================================================= */
+  const PIGPEN_MAP = {
+    a:'⌐A', b:'⌐B', c:'⌐C', d:'⌐D', e:'⌐E', f:'⌐F', g:'⌐G', h:'⌐H', i:'⌐I',
+    j:'⌐J·', k:'⌐K·', l:'⌐L·', m:'⌐M·', n:'⌐N·', o:'⌐O·', p:'⌐P·', q:'⌐Q·', r:'⌐R·',
+    s:'◇S', t:'◇T', u:'◇U', v:'◇V', w:'◇W', x:'◇X·', y:'◇Y·', z:'◇Z·'
+  };
+  function toPigpen(text){
+    return Array.from(text.toLowerCase()).map(ch => {
+      if (PIGPEN_MAP[ch]) return PIGPEN_MAP[ch];
+      if (ch === ' ') return '  ';
+      return ch;
+    }).join(' ');
+  }
+
+  /* =========================================================
+     CONVERTER REGISTRY
+     Each entry: { label, fn(text) => string }
+  ========================================================= */
+  const CONVERTERS = [
+    { id: 'bold', label: 'Bold', fn: t => convertWithTable(t, 'bold') },
+    { id: 'italic', label: 'Italic', fn: t => convertWithTable(t, 'italic') },
+    { id: 'script', label: 'Script', fn: t => convertWithTable(t, 'script') },
+    { id: 'doublestruck', label: 'Double Struck', fn: t => convertWithTable(t, 'doublestruck') },
+    { id: 'fraktur', label: 'Fraktur', fn: t => convertWithTable(t, 'fraktur') },
+    { id: 'bubble', label: 'Bubble', fn: t => convertWithTable(t, 'bubble') },
+    { id: 'circled', label: 'Circled', fn: t => convertWithTable(t, 'circled') },
+    { id: 'squared', label: 'Squared', fn: t => convertWithTable(t, 'squared') },
+    { id: 'smallcaps', label: 'Small Caps', fn: t => convertWithTable(t, 'smallcaps') },
+    { id: 'monospace', label: 'Monospace', fn: t => convertWithTable(t, 'monospace') },
+    { id: 'superscript', label: 'Superscript', fn: t => convertWithTable(t, 'superscript') },
+    { id: 'subscript', label: 'Subscript', fn: t => convertWithTable(t, 'subscript') },
+    { id: 'leetspeak', label: 'Leetspeak', fn: toLeet },
+    { id: 'reverse', label: 'Reverse', fn: toReverse },
+    { id: 'mirror', label: 'Mirror', fn: toMirror },
+    { id: 'upsidedown', label: 'Upside Down', fn: toUpsideDown },
+    { id: 'zalgo', label: 'Zalgo', fn: toZalgo },
+    { id: 'morse', label: 'Morse Code', fn: toMorse },
+    { id: 'binary', label: 'Binary', fn: toBinary },
+    { id: 'hex', label: 'Hex', fn: toHex },
+    { id: 'base64', label: 'Base64', fn: toBase64 },
+    { id: 'rot13', label: 'ROT13', fn: toRot13 },
+    { id: 'caesar', label: 'Caesar Cipher', fn: toCaesar },
+    { id: 'braille', label: 'Braille', fn: toBraille },
+    { id: 'runes', label: 'Runes', fn: toRunes },
+    { id: 'orkhon', label: 'Orkhon Runes', fn: toOrkhon },
+    { id: 'emoji', label: 'Emoji Text', fn: toEmojiText },
+    { id: 'ascii', label: 'ASCII', fn: toAsciiCodes },
+    { id: 'unicode', label: 'Unicode', fn: toUnicodeCodes },
+    { id: 'htmlentities', label: 'HTML Entities', fn: toHtmlEntities },
+    { id: 'urlencode', label: 'URL Encode', fn: toUrlEncode },
+    { id: 'urldecode', label: 'URL Decode', fn: toUrlDecode },
+    { id: 'atbash', label: 'Atbash', fn: toAtbash },
+    { id: 'railfence', label: 'Rail Fence', fn: t => toRailFence(t, 3) },
+    { id: 'bacon', label: 'Bacon Cipher', fn: toBacon },
+    { id: 'pigpen', label: 'Pigpen', fn: toPigpen }
+  ];
+
+  /* =========================================================
+     DOM REFERENCES
+  ========================================================= */
+  const inputText = document.getElementById('inputText');
+  const cardsGrid = document.getElementById('cardsGrid');
+  const searchBox = document.getElementById('searchBox');
+  const resultBox = document.getElementById('resultBox');
+  const activeBadge = document.getElementById('activeBadge');
+  const clearBtn = document.getElementById('clearBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  const copyLabel = document.getElementById('copyLabel');
+  const copyIcon = document.getElementById('copyIcon');
+
+  let activeConverterId = null;
+
+  /* =========================================================
+     RENDER CARDS
+  ========================================================= */
+  function renderCards(filter){
+    const term = (filter || '').trim().toLowerCase();
+    cardsGrid.innerHTML = '';
+    CONVERTERS.forEach((conv, index) => {
+      if (term && !conv.label.toLowerCase().includes(term)) return;
+      const card = document.createElement('div');
+      card.className = 'card' + (conv.id === activeConverterId ? ' active' : '');
+      card.style.animationDelay = (index * 0.02) + 's';
+      card.dataset.id = conv.id;
+      const span = document.createElement('span');
+      span.textContent = conv.label;
+      card.appendChild(span);
+      card.addEventListener('click', function(e){
+        createRipple(e, card);
+        selectConverter(conv.id);
+      });
+      cardsGrid.appendChild(card);
+    });
+  }
+
+  /* =========================================================
+     RIPPLE EFFECT
+  ========================================================= */
+  function createRipple(e, el){
+    const circle = document.createElement('span');
+    const rect = el.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    circle.style.width = circle.style.height = size + 'px';
+    circle.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    circle.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    circle.classList.add('ripple');
+    el.appendChild(circle);
+    setTimeout(() => circle.remove(), 650);
+  }
+
+  /* =========================================================
+     SELECT CONVERTER & UPDATE RESULT
+  ========================================================= */
+  function selectConverter(id){
+    activeConverterId = id;
+    document.querySelectorAll('.card').forEach(c => {
+      c.classList.toggle('active', c.dataset.id === id);
+    });
+    updateResult();
+  }
+
+  function updateResult(){
+    if (!activeConverterId){
+      resultBox.classList.add('empty');
+      resultBox.textContent = 'Select a conversion above to see the magic happen ✨';
+      activeBadge.textContent = 'None Selected';
+      return;
+    }
+    const conv = CONVERTERS.find(c => c.id === activeConverterId);
+    const raw = inputText.value;
+    activeBadge.textContent = conv.label;
+
+    if (!raw){
+      resultBox.classList.add('empty');
+      resultBox.textContent = 'Start typing above to convert your text into ' + conv.label + '...';
+      return;
+    }
+
+    let output;
+    try {
+      output = conv.fn(raw);
+    } catch (err){
+      output = 'Conversion error: ' + err.message;
+    }
+
+    resultBox.classList.remove('empty');
+    resultBox.textContent = output;
+    resultBox.classList.remove('glow-update');
+    void resultBox.offsetWidth; // restart animation
+    resultBox.classList.add('glow-update');
+  }
+
+  /* =========================================================
+     EVENT LISTENERS
+  ========================================================= */
+  inputText.addEventListener('input', updateResult);
+
+  searchBox.addEventListener('input', () => renderCards(searchBox.value));
+
+  clearBtn.addEventListener('click', function(e){
+    createRipple(e, clearBtn);
+    inputText.value = '';
+    updateResult();
+    inputText.focus();
+  });
+
+  copyBtn.addEventListener('click', function(e){
+    createRipple(e, copyBtn);
+    const text = resultBox.classList.contains('empty') ? '' : resultBox.textContent;
+    if (!text) return;
+
+    const finishCopy = () => {
+      copyBtn.classList.add('copied');
+      copyLabel.textContent = 'Copied!';
+      copyIcon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        copyLabel.textContent = 'Copy';
+        copyIcon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
+      }, 2000);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(finishCopy).catch(() => {
+        fallbackCopy(text);
+        finishCopy();
+      });
+    } else {
+      fallbackCopy(text);
+      finishCopy();
+    }
+  });
+
+  function fallbackCopy(text){
+    const tempArea = document.createElement('textarea');
+    tempArea.value = text;
+    tempArea.style.position = 'fixed';
+    tempArea.style.opacity = '0';
+    document.body.appendChild(tempArea);
+    tempArea.select();
+    try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+    document.body.removeChild(tempArea);
+  }
+
+  /* =========================================================
+     INIT
+  ========================================================= */
+  renderCards();
+  updateResult();
+
+})();
+</script>
+</body>
+</html>
